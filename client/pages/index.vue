@@ -1,67 +1,41 @@
 <template>
-     <div >
-    
-     
-      
-      <button @click="precamera()">Prepare Camera</button>
-      <button @click="yayinla()">Prepare Camera</button>
-    
-
-    
-    <video class="player"></video>
-
-    <video class="streaming"></video>
-    
+  <div>
+    <video ref="video" width="100%" muted />
   </div>
 </template>
+
 <script>
-//var fsWriteStreamAtomic = require('fs-write-stream-atomic')
-
+import socket from '~/plugins/socket.io.js'
 export default {
-    data(){
-        blobdata:'';
-        video:'';
-        stream:'';
-        recorder:'';
-        blob:'';
-        file:'';
-        formData:'';
-        writestream:'';
-        //fs:'';
-        
-        
-    },
-   
-    
-    methods:{
-
-    
-         async precamera(){
-      // this.writestream= this.fsWriteStreamAtomic('output.webm')
-             this.video=document.querySelector('.player');
-            this.stream = await navigator.mediaDevices.getUserMedia({video: true, audio: false});
-            // this.recorder = new RecordRTC(this.stream, {type: 'video'});
-           // this.stream.pipe(this.writestream);
-            this.video.srcObject=this.stream;
-            this.video.play();
-            
-            },
-            async yayinla(){
-            await  this.stream.on('data', (chunk)=>{
-                console.log(chunk.size);
-              });
-             }
+  data() {
+    return {
+      video: null,
+      cameraStream: null,
+      mediaRecorder: null,
     }
+  },
+
+  async mounted() {
+      this.cameraStream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: true,
+      })
+
+      this.video = this.$refs.video
+      this.video.srcObject = this.cameraStream
+      this.video.onloadedmetadata = () => {
+        this.video.play()
+      }
+       this.mediaRecorder = new MediaRecorder(this.cameraStream, {
+        mimeType: 'video/webm',
+        videoBitsPerSecond: 3000000,
+      })
+      this.mediaRecorder.start(1000)
+
+      this.mediaRecorder.ondataavailable = e => {
+        socket.emit('stream-video-chunk', e.data)
+      }
+      
+  }
 }
-            
-
-
-
-     
-  
-    
-    
-
-
-
 </script>
