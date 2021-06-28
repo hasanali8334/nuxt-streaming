@@ -18,7 +18,7 @@ const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path
 
     
     io.on('connection', socket => {
-        const ffmpegSettings = '.sdp -b 900k -vcodec'
+        const ffmpegSettings = ' '
         const streamUrl = 'rtmp://localhost:3000/channel'
         const command = `${ffmpegPath} -i pipe:0 ${ffmpegSettings} "${streamUrl}"`
        // const command = `${ffmpegPath} -i pipe:0  "${streamUrl}"`
